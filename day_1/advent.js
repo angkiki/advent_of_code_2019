@@ -1,143 +1,41 @@
-const data = [
-  120150,
-  105328,
-  70481,
-  86674,
-  112434,
-  94883,
-  147500,
-  146007,
-  103982,
-  65758,
-  132357,
-  60885,
-  97516,
-  96977,
-  129085,
-  80330,
-  124081,
-  102501,
-  102505,
-  70029,
-  54155,
-  69253,
-  60120,
-  53192,
-  89470,
-  137125,
-  136296,
-  104546,
-  92859,
-  74937,
-  135044,
-  66238,
-  126678,
-  86364,
-  138559,
-  82393,
-  96947,
-  107749,
-  115332,
-  117563,
-  95431,
-  99640,
-  107667,
-  120427,
-  108389,
-  51567,
-  57493,
-  68518,
-  114565,
-  107248,
-  50627,
-  122517,
-  129687,
-  118989,
-  52459,
-  83726,
-  106765,
-  75872,
-  147111,
-  78822,
-  65058,
-  142460,
-  122496,
-  148942,
-  72753,
-  141599,
-  105711,
-  141860,
-  134066,
-  116716,
-  107455,
-  56673,
-  148238,
-  92318,
-  86652,
-  69312,
-  91352,
-  94528,
-  73441,
-  137814,
-  80247,
-  101115,
-  61773,
-  100951,
-  77189,
-  119083,
-  93841,
-  109090,
-  83370,
-  70230,
-  144812,
-  67647,
-  105358,
-  135780,
-  85225,
-  100697,
-  100998,
-  131151,
-  52826,
-  114084,
-]
+const fs = require("fs");
 
-const fuelLeft = (fuel) => Math.floor(fuel / 3) - 2;
+const fuelNeeded = fuel => Math.floor(fuel / 3) - 2;
+const partOne = data => data.reduce((acc, curr) => acc + fuelNeeded(curr), 0);
 
-// <---------------- Part 1 --------------->
-const partOne = () => {
-  const accFn = (acc, curr) => {
-    let c = fuelLeft(curr);
-    return acc + c;
-  }
-  
-  let result = data.reduce(accFn, 0);
-  console.log('part one -> ', result);
-  return result;
-}
-
-partOne();
-
-
-// <---------------- Part 2 --------------->
-const partTwo = () => {
-  const accFn = (acc, curr) => {
-    let c = curr;
+const partTwo = data =>
+  data.reduce((acc, curr) => {
     let total = 0;
+    let holder = curr;
 
-    while (c > 0) {
-			let tempC = fuelLeft(c);
-			c -= tempC;
-			total += tempC;
+    while (holder > 0) {
+      let fuel = fuelNeeded(holder);
+      if (fuel < 1) break;
+
+      total += fuel;
+      holder = fuel;
     }
 
     return acc + total;
+  }, 0);
+
+fs.readFile("./data.txt", "utf-8", (err, data) => {
+  if (err) {
+    throw err;
   }
 
-	let result = data.reduce(accFn, 0);
-	console.log('part two -> ', result);
-	return result;
-}
+  const dataArray = data.split("\n");
 
-partTwo();
+  console.log("- - - - Part One - - - -");
+  console.log("Answer", partOne(dataArray));
+  console.log("- - - - - - - - - - - - -");
 
+  console.log("# #");
+  console.log("# #");
+  console.log("# #");
+  console.log("# #");
 
+  console.log("- - - - Part Two - - - -");
+  console.log("Answer", partTwo(dataArray));
+  console.log("- - - - - - - - - - - - -");
+});
