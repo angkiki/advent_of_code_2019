@@ -101,15 +101,43 @@ const data = [
   114084,
 ]
 
+const fuelLeft = (fuel) => Math.floor(fuel / 3) - 2;
+
 // <---------------- Part 1 --------------->
 const partOne = () => {
   const accFn = (acc, curr) => {
-    let c = Math.floor(curr / 3) - 2;
+    let c = fuelLeft(curr);
     return acc + c;
   }
   
   let result = data.reduce(accFn, 0);
+  console.log('part one -> ', result);
   return result;
 }
+
+partOne();
+
+
+// <---------------- Part 2 --------------->
+const partTwo = () => {
+  const accFn = (acc, curr) => {
+    let c = curr;
+    let total = 0;
+
+    while (c > 0) {
+			let tempC = fuelLeft(c);
+			c -= tempC;
+			total += tempC;
+    }
+
+    return acc + total;
+  }
+
+	let result = data.reduce(accFn, 0);
+	console.log('part two -> ', result);
+	return result;
+}
+
+partTwo();
 
 
