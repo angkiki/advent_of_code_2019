@@ -186,8 +186,6 @@ const buildWireGrid = (
   grid: number[][],
   centralPort: ICoordinates
 ): { grid: number[][]; coordinates: ICoordinates } => {
-  // TODO: either receive coordinates of ORIGIN
-  // Or write a method to compute ORIGIN
   const centralPortCoordinates = {
     col: centralPort.col,
     row: centralPort.row
