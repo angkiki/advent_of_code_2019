@@ -54,7 +54,8 @@ const prependNewCol = (grid: number[][]) => {
 const traverseUp = (
   count: number,
   grid: number[][],
-  coordinates: ICoordinates
+  coordinates: ICoordinates,
+  originCoordinates: ICoordinates
 ): ICoordinates => {
   const { row, col } = coordinates;
 
@@ -71,6 +72,7 @@ const traverseUp = (
       const lengthOfRows = grid[row].length;
       const newRow = Array(lengthOfRows).fill(0);
       grid.unshift(newRow);
+      originCoordinates.row++;
 
       if (currRow < 0) {
         currRow = 0;
@@ -119,7 +121,8 @@ const traverseDown = (
 const traverseLeft = (
   count: number,
   grid: number[][],
-  coordinates: ICoordinates
+  coordinates: ICoordinates,
+  originCoordinates: ICoordinates
 ): ICoordinates => {
   const { row, col } = coordinates;
 
@@ -138,6 +141,7 @@ const traverseLeft = (
       if (currCol < 0) {
         currCol = 0;
       }
+      originCoordinates.col++;
       grid[row][currCol]++;
     }
   }
@@ -179,38 +183,61 @@ const traverseRight = (
 
 const buildWireGrid = (
   instructions: string[],
-  grid: number[][]
-): number[][] => {
+  grid: number[][],
+  centralPort: ICoordinates
+): { grid: number[][]; coordinates: ICoordinates } => {
   // TODO: either receive coordinates of ORIGIN
   // Or write a method to compute ORIGIN
-  let col = 0;
-  let row = 0;
+  const centralPortCoordinates = {
+    col: centralPort.col,
+    row: centralPort.row
+  };
+
+  let tempCol = centralPort.col;
+  let tempRow = centralPort.row;
 
   for (let i = 0; i < instructions.length; i++) {
-    let instruction = instructions[i];
+    const instruction = instructions[i];
     const { direction, count } = readInstruction(instruction);
+    const currCoordinates = {
+      col: tempCol,
+      row: tempRow
+    };
     let newCoordinates;
 
     switch (direction) {
       case EDir.UP:
-        newCoordinates = traverseUp(count, grid, { col, row });
+        newCoordinates = traverseUp(
+          count,
+          grid,
+          currCoordinates,
+          centralPortCoordinates
+        );
         break;
       case EDir.RIGHT:
-        newCoordinates = traverseRight(count, grid, { col, row });
+        newCoordinates = traverseRight(count, grid, currCoordinates);
         break;
       case EDir.DOWN:
-        newCoordinates = traverseDown(count, grid, { col, row });
+        newCoordinates = traverseDown(count, grid, currCoordinates);
         break;
       case EDir.LEFT:
-        newCoordinates = traverseLeft(count, grid, { col, row });
+        newCoordinates = traverseLeft(
+          count,
+          grid,
+          currCoordinates,
+          centralPortCoordinates
+        );
         break;
     }
 
-    col = newCoordinates.col;
-    row = newCoordinates.row;
+    tempCol = newCoordinates.col;
+    tempRow = newCoordinates.row;
   }
 
-  return grid;
+  return {
+    grid,
+    coordinates: centralPortCoordinates
+  };
 };
 
 export default buildWireGrid;
