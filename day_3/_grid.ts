@@ -106,8 +106,8 @@ const traverseUp = ({
   let currRow = row;
 
   while (remainder > 0) {
-    currRow--;
-    remainder--;
+    currRow -= 1;
+    remainder -= 1;
 
     if (!grid[currRow]) {
       prependNewRow(grid);
@@ -155,8 +155,8 @@ const traverseDown = ({
   let currRow = row;
 
   while (remainder > 0) {
-    currRow++;
-    remainder--;
+    currRow += 1;
+    remainder -= 1;
 
     if (!grid[currRow]) {
       appendNewRow(grid);
@@ -203,8 +203,8 @@ const traverseLeft = ({
   let currCol = col;
 
   while (remainder > 0) {
-    currCol--;
-    remainder--;
+    currCol -= 1;
+    remainder -= 1;
 
     if (typeof grid[row][currCol] !== "number") {
       prependNewCol(grid);
@@ -252,8 +252,8 @@ const traverseRight = ({
   let currCol = col;
 
   while (remainder > 0) {
-    currCol++;
-    remainder--;
+    currCol += 1;
+    remainder -= 1;
 
     if (typeof grid[row][currCol] !== "number") {
       appendNewCol(grid);
@@ -306,7 +306,7 @@ export const buildWireGrid = (
       col: tempCol,
       row: tempRow,
     };
-    let result;
+    let result: ITraversalResult;
 
     const payload: ITraversalPayload = {
       count,
@@ -331,8 +331,8 @@ export const buildWireGrid = (
         break;
     }
 
-    tempCol = result.col;
-    tempRow = result.row;
+    tempCol = result.coordinates.col;
+    tempRow = result.coordinates.row;
     if (smd === null || result.smd < smd) {
       smd = result.smd;
     }
@@ -344,16 +344,3 @@ export const buildWireGrid = (
     smd,
   };
 };
-
-// export const mapWireTwo = (
-//   instructions: string[],
-//   grid: number[][],
-//   centralPort: ICoordinates
-// ): {
-//   grid: number[][];
-//   coordinates: ICoordinates;
-//   shortestDistance: number;
-// } => {
-//   // some codezz
-
-// };
