@@ -42,7 +42,7 @@ const computeManhattanDistance = (
   const coorCol = coordinates.col;
   const coorRow = coordinates.row;
 
-  return Math.abs(cpCol - coorCol + (cpRow - coorRow));
+  return Math.abs(cpCol - coorCol) + Math.abs(cpRow - coorRow);
 };
 
 const determineDirection = (rawDir: string): EDir => {
