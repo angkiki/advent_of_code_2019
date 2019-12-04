@@ -333,7 +333,7 @@ export const buildWireGrid = (
 
     tempCol = result.coordinates.col;
     tempRow = result.coordinates.row;
-    if (smd === null || result.smd < smd) {
+    if (result.smd !== null && (smd === null || result.smd < smd)) {
       smd = result.smd;
     }
   }
