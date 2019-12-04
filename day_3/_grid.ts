@@ -2,9 +2,26 @@ enum EDir {
   UP,
   DOWN,
   LEFT,
-  RIGHT
+  RIGHT,
 }
 
+interface IBuildGridResult {
+  grid: number[][];
+  coordinates: ICoordinates;
+  smd: number | null; // shortest manhattan distance
+}
+interface ITraversalPayload {
+  count: number;
+  grid: number[][];
+  coordinates: ICoordinates;
+  marker: number;
+  cpc: ICoordinates; // central port coordinates
+}
+
+interface ITraversalResult {
+  coordinates: ICoordinates;
+  smd: number | null; // shortest manhattan distance
+}
 interface ICoordinates {
   col: number;
   row: number;
@@ -14,6 +31,19 @@ interface IInstruction {
   direction: EDir;
   count: number;
 }
+
+const computeManhattanDistance = (
+  centralPort: ICoordinates,
+  coordinates: ICoordinates
+): number => {
+  const cpCol = centralPort.col;
+  const cpRow = centralPort.row;
+
+  const coorCol = coordinates.col;
+  const coorRow = coordinates.row;
+
+  return Math.abs(cpCol - coorCol + (cpRow - coorRow));
+};
 
 const determineDirection = (rawDir: string): EDir => {
   switch (rawDir) {
@@ -35,7 +65,7 @@ const readInstruction = (instruction: string): IInstruction => {
 
   return {
     direction,
-    count
+    count,
   };
 };
 
@@ -51,14 +81,27 @@ const prependNewCol = (grid: number[][]) => {
   }
 };
 
-const traverseUp = (
-  count: number,
-  grid: number[][],
-  coordinates: ICoordinates,
-  originCoordinates: ICoordinates
-): ICoordinates => {
-  const { row, col } = coordinates;
+const prependNewRow = (grid: number[][]) => {
+  const lengthOfRows = grid[0].length;
+  const newRow = Array(lengthOfRows).fill(0);
+  grid.unshift(newRow);
+};
 
+const appendNewRow = (grid: number[][]) => {
+  const lengthOfRows = grid[0].length;
+  const newRow = Array(lengthOfRows).fill(0);
+  grid.push(newRow);
+};
+
+const traverseUp = ({
+  count,
+  grid,
+  coordinates,
+  marker,
+  cpc,
+}: ITraversalPayload): ITraversalResult => {
+  const { row, col } = coordinates;
+  let smd = null; // shortest manhattan distance
   let remainder = count;
   let currRow = row;
 
@@ -66,35 +109,48 @@ const traverseUp = (
     currRow--;
     remainder--;
 
-    if (grid[currRow]) {
-      grid[currRow][col]++;
-    } else {
-      const lengthOfRows = grid[row].length;
-      const newRow = Array(lengthOfRows).fill(0);
-      grid.unshift(newRow);
-      originCoordinates.row++;
-
+    if (!grid[currRow]) {
+      prependNewRow(grid);
+      cpc.row += 1;
       if (currRow < 0) {
         currRow = 0;
       }
+    }
 
-      grid[currRow][col]++;
+    if (grid[currRow][col] === 0) {
+      grid[currRow][col] = marker;
+    } else if (grid[currRow][col] !== marker) {
+      grid[currRow][col] = 500;
+      const currCoor = {
+        col,
+        row: currRow,
+      };
+
+      let distance = computeManhattanDistance(cpc, currCoor);
+      if (smd === null || distance < smd) {
+        smd = distance;
+      }
     }
   }
 
   return {
-    col,
-    row: currRow
+    coordinates: {
+      col,
+      row: currRow,
+    },
+    smd,
   };
 };
 
-const traverseDown = (
-  count: number,
-  grid: number[][],
-  coordinates: ICoordinates
-): ICoordinates => {
+const traverseDown = ({
+  count,
+  grid,
+  coordinates,
+  marker,
+  cpc,
+}: ITraversalPayload): ITraversalResult => {
   const { row, col } = coordinates;
-
+  let smd = null; // shortest manhattan distance
   let remainder = count;
   let currRow = row;
 
@@ -102,30 +158,47 @@ const traverseDown = (
     currRow++;
     remainder--;
 
-    if (grid[currRow]) {
-      grid[currRow][col]++;
-    } else {
-      const lengthOfRows = grid[row].length;
-      const newRow = Array(lengthOfRows).fill(0);
-      grid.unshift(newRow);
-      grid[currRow][col]++;
+    if (!grid[currRow]) {
+      appendNewRow(grid);
+      if (currRow < 0) {
+        currRow = 0;
+      }
+    }
+
+    if (grid[currRow][col] === 0) {
+      grid[currRow][col] = marker;
+    } else if (grid[currRow][col] !== marker) {
+      grid[currRow][col] = 500;
+      const currCoor = {
+        col,
+        row: currRow,
+      };
+
+      let distance = computeManhattanDistance(cpc, currCoor);
+      if (smd === null || distance < smd) {
+        smd = distance;
+      }
     }
   }
 
   return {
-    col,
-    row: currRow
+    coordinates: {
+      col,
+      row: currRow,
+    },
+    smd,
   };
 };
 
-const traverseLeft = (
-  count: number,
-  grid: number[][],
-  coordinates: ICoordinates,
-  originCoordinates: ICoordinates
-): ICoordinates => {
+const traverseLeft = ({
+  count,
+  grid,
+  coordinates,
+  marker,
+  cpc,
+}: ITraversalPayload): ITraversalResult => {
   const { row, col } = coordinates;
-
+  let smd = null; // shortest manhattan distance
   let remainder = count;
   let currCol = col;
 
@@ -133,32 +206,48 @@ const traverseLeft = (
     currCol--;
     remainder--;
 
-    if (grid[row][currCol] >= 0) {
-      grid[row][currCol]++;
-    } else {
-      // we append a 0 to every row
+    if (typeof grid[row][currCol] !== "number") {
       prependNewCol(grid);
+      cpc.col += 1;
       if (currCol < 0) {
         currCol = 0;
       }
-      originCoordinates.col++;
-      grid[row][currCol]++;
+    }
+
+    if (grid[row][currCol] === 0) {
+      grid[row][currCol] = marker;
+    } else if (grid[row][currCol] !== marker) {
+      grid[row][currCol] = 500;
+      const currCoor = {
+        col: currCol,
+        row,
+      };
+
+      let distance = computeManhattanDistance(cpc, currCoor);
+      if (smd === null || distance < smd) {
+        smd = distance;
+      }
     }
   }
 
   return {
-    row,
-    col: currCol
+    coordinates: {
+      col: currCol,
+      row,
+    },
+    smd,
   };
 };
 
-const traverseRight = (
-  count: number,
-  grid: number[][],
-  coordinates: ICoordinates
-): ICoordinates => {
+const traverseRight = ({
+  count,
+  grid,
+  coordinates,
+  marker,
+  cpc,
+}: ITraversalPayload): ITraversalResult => {
   const { row, col } = coordinates;
-
+  let smd = null; // shortest manhattan distance
   let remainder = count;
   let currCol = col;
 
@@ -166,76 +255,105 @@ const traverseRight = (
     currCol++;
     remainder--;
 
-    if (grid[row][currCol] >= 0) {
-      grid[row][currCol]++;
-    } else {
-      // we append a 0 to every row
+    if (typeof grid[row][currCol] !== "number") {
       appendNewCol(grid);
-      grid[row][currCol]++;
+    }
+
+    if (grid[row][currCol] === 0) {
+      grid[row][currCol] = marker;
+    } else if (grid[row][currCol] !== marker) {
+      grid[row][currCol] = 500;
+      const currCoor = {
+        col: currCol,
+        row,
+      };
+
+      let distance = computeManhattanDistance(cpc, currCoor);
+      if (smd === null || distance < smd) {
+        smd = distance;
+      }
     }
   }
 
   return {
-    row,
-    col: currCol
+    coordinates: {
+      col: currCol,
+      row,
+    },
+    smd,
   };
 };
 
-const buildWireGrid = (
+export const buildWireGrid = (
   instructions: string[],
   grid: number[][],
-  centralPort: ICoordinates
-): { grid: number[][]; coordinates: ICoordinates } => {
+  centralPort: ICoordinates,
+  marker: number
+): IBuildGridResult => {
   const centralPortCoordinates = {
     col: centralPort.col,
-    row: centralPort.row
+    row: centralPort.row,
   };
 
   let tempCol = centralPort.col;
   let tempRow = centralPort.row;
+  let smd = null;
 
   for (let i = 0; i < instructions.length; i++) {
     const instruction = instructions[i];
     const { direction, count } = readInstruction(instruction);
     const currCoordinates = {
       col: tempCol,
-      row: tempRow
+      row: tempRow,
     };
-    let newCoordinates;
+    let result;
+
+    const payload: ITraversalPayload = {
+      count,
+      grid,
+      coordinates: currCoordinates,
+      marker,
+      cpc: centralPortCoordinates,
+    };
 
     switch (direction) {
       case EDir.UP:
-        newCoordinates = traverseUp(
-          count,
-          grid,
-          currCoordinates,
-          centralPortCoordinates
-        );
+        result = traverseUp(payload);
         break;
       case EDir.RIGHT:
-        newCoordinates = traverseRight(count, grid, currCoordinates);
+        result = traverseRight(payload);
         break;
       case EDir.DOWN:
-        newCoordinates = traverseDown(count, grid, currCoordinates);
+        result = traverseDown(payload);
         break;
       case EDir.LEFT:
-        newCoordinates = traverseLeft(
-          count,
-          grid,
-          currCoordinates,
-          centralPortCoordinates
-        );
+        result = traverseLeft(payload);
         break;
     }
 
-    tempCol = newCoordinates.col;
-    tempRow = newCoordinates.row;
+    tempCol = result.col;
+    tempRow = result.row;
+    if (smd === null || result.smd < smd) {
+      smd = result.smd;
+    }
   }
 
   return {
     grid,
-    coordinates: centralPortCoordinates
+    coordinates: centralPortCoordinates,
+    smd,
   };
 };
 
-export default buildWireGrid;
+// export const mapWireTwo = (
+//   instructions: string[],
+//   grid: number[][],
+//   centralPort: ICoordinates
+// ): {
+//   grid: number[][];
+//   coordinates: ICoordinates;
+//   shortestDistance: number;
+// } => {
+//   // some codezz
+
+// };
