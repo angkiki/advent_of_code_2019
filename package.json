@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/angkiki/advent_of_code_2019#readme",
   "devDependencies": {
+    "@types/jest": "^24.0.23",
     "@types/node": "^12.12.14"
   }
 }
