@@ -4,21 +4,45 @@ export class Orbit {
   directOrbits: number;
   indirectOrbits: number;
 
-  constructor(parent: Orbit | null) {
-    this.parent = parent;
+  constructor() {
+    this.parent = null;
     this.children = [];
-    this.directOrbits = parent ? 1 : 0;
-    this.indirectOrbits = parent
-      ? parent.directOrbits + parent.indirectOrbits
-      : 0;
+    this.directOrbits = 0;
+    this.indirectOrbits = 0;
   }
 
   addParent(parent: Orbit) {
+    if (this.parent !== null) {
+      throw Error("This orbit already has a parent");
+    }
+
+    this.parent = parent;
     this.directOrbits = 1;
     this.indirectOrbits = parent.directOrbits + parent.indirectOrbits;
   }
 
   addChild(child: Orbit) {
     this.children.push(child);
+    this.reconcileChildOrbits(child);
+  }
+
+  private reconcileChildOrbits(child: Orbit) {
+    child.parent = this;
+    child.directOrbits = 1;
+    child.indirectOrbits = this.directOrbits + this.indirectOrbits;
+
+    child.children.forEach(c => this.reconcileChildOrbits(c));
   }
 }
+
+export const findTotalOrbits = (orbit: Orbit): number => {
+  if (orbit.children.length === 0) {
+    return orbit.directOrbits + orbit.indirectOrbits;
+  }
+
+  return (
+    orbit.directOrbits +
+    orbit.indirectOrbits +
+    orbit.children.reduce((acc, curr) => acc + findTotalOrbits(curr), 0)
+  );
+};
