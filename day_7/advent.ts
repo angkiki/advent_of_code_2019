@@ -1,8 +1,14 @@
 import * as fs from "fs";
+import { permutation } from "./_util";
 
 export enum EModes {
   POSITION = 0,
   IMMEDIATE = 1,
+}
+
+interface IResult {
+  largestNumber: number;
+  index: number;
 }
 
 interface IParsedInstructions {
@@ -123,10 +129,17 @@ const opCodeSevenEight = (
   }
 };
 
-const intCodeProgram = (data: number[], input: number): number[] => {
+const intCodeProgram = (
+  data: number[],
+  inputOne: number,
+  inputTwo: number
+): number[] => {
   let pointer = 0;
   let instruction = data[pointer];
   let parsed = parseInstruction(instruction);
+  let input = inputOne;
+  let inputOneRead = false;
+
   const allOutputs = [];
 
   while (isValid(parsed.opCode)) {
@@ -134,9 +147,14 @@ const intCodeProgram = (data: number[], input: number): number[] => {
       break;
     }
 
+    if (inputOneRead) {
+      input = inputTwo;
+    }
+
     switch (parsed.opCode) {
       case 3:
         opCodeThree(data, pointer, input, parsed);
+        inputOneRead = true;
         pointer += 2;
         break;
       case 4:
@@ -165,20 +183,29 @@ const intCodeProgram = (data: number[], input: number): number[] => {
   return allOutputs;
 };
 
-// fs.readFile("./data.txt", "utf-8", (err: Error, data: string) => {
-//   if (err) throw err;
+fs.readFile("./data.txt", "utf-8", (err: Error, data: string) => {
+  if (err) throw err;
 
-//   const dataArray = data.split(",").map(num => +num);
-//   const output = intCodeProgram(dataArray, 1);
+  const dataArray = data.split(",").map(num => +num);
+  const baseSequence = [0, 1, 2, 3, 4];
+  const allSequences = permutation(baseSequence);
+  const partOneResult: IResult = { largestNumber: 0, index: 0 };
+  console.log("computing part one ....");
 
-//   console.log("part 1 is ....");
-//   console.log("all outputs are -> ", output);
+  for (let i = 0; i < allSequences.length; i++) {
+    const currentSequence = allSequences[i];
+    let inputTwo = 0;
+    currentSequence.forEach((command: number) => {
+      let temp = intCodeProgram([...dataArray], command, inputTwo);
+      inputTwo = temp[0];
+    });
 
-//   console.log("- - - - - - ");
+    if (inputTwo > partOneResult.largestNumber) {
+      partOneResult.largestNumber = inputTwo;
+      partOneResult.index = i;
+    }
+  }
 
-//   const dataArrayTwo = data.split(",").map(num => +num);
-//   const outputTwo = intCodeProgram(dataArrayTwo, 5);
-
-//   console.log("part 2 is ....");
-//   console.log("all outputs are -> ", outputTwo);
-// });
+  console.log("result -> ", partOneResult);
+  console.log("largest sequence -> ", allSequences[partOneResult.index]);
+});
