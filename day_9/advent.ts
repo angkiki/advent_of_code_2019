@@ -211,9 +211,13 @@ const intCodeProgram = (data: number[], input: number): number[] => {
 
 fs.readFile("./data.txt", "utf-8", (err: Error, data: string) => {
   if (err) throw err;
+  const dataArray = data.split(",").map((n: string) => +n);
 
   console.log("part one .....");
-  const dataArray = data.split(",").map((n: string) => +n);
-  const output = intCodeProgram(dataArray, 1);
-  console.log("output -> ", output);
+  const output1 = intCodeProgram([...dataArray], 1);
+  console.log("output -> ", output1);
+
+  console.log("part two ....");
+  const output2 = intCodeProgram([...dataArray], 2);
+  console.log("output -> ", output2);
 });
