@@ -3,6 +3,7 @@ import * as fs from "fs";
 export enum EModes {
   POSITION = 0,
   IMMEDIATE = 1,
+  RELATIVE = 2,
 }
 
 interface IResult {
@@ -17,7 +18,7 @@ interface IParsedInstructions {
   p3?: EModes;
 }
 
-export const parseInstruction = (instruction: number): IParsedInstructions => {
+const parseInstruction = (instruction: number): IParsedInstructions => {
   const intstructionsArray = instruction.toString().split("");
   const opCode = intstructionsArray.splice(intstructionsArray.length - 2);
   const [p1, p2, p3] = intstructionsArray.reverse();
@@ -30,6 +31,32 @@ export const parseInstruction = (instruction: number): IParsedInstructions => {
   };
 };
 
+const determineMemoryAddress = (
+  data: number[],
+  param: number,
+  currentPosition: number,
+  offset: number,
+  relativeBase: number
+): number => {
+  switch (param) {
+    case EModes.POSITION:
+      return data[currentPosition + offset];
+    case EModes.IMMEDIATE:
+      return currentPosition + offset;
+    default:
+      // case 2
+      return data[currentPosition + offset] + relativeBase;
+  }
+};
+
+const populateEmptyMemory = (data: number[], originalDataLength: number) => {
+  for (let i = originalDataLength; i < data.length; i++) {
+    if (!data[i]) {
+      data[i] = i - originalDataLength;
+    }
+  }
+};
+
 const isValid = (instruction: number): boolean => {
   switch (instruction) {
     case 1:
@@ -40,6 +67,7 @@ const isValid = (instruction: number): boolean => {
     case 6:
     case 7:
     case 8:
+    case 9:
     case 99:
       return true;
     default:
@@ -49,18 +77,18 @@ const isValid = (instruction: number): boolean => {
 
 const opCodeOneTwo = (
   data: number[],
-  currentPosition: number,
-  parsed: IParsedInstructions
+  parsed: IParsedInstructions,
+  cP: number, // current pointer position
+  cRB: number // currentRelativeBase
 ) => {
-  const pos1 =
-    parsed.p1 === 0 ? data[currentPosition + 1] : currentPosition + 1;
-  const pos2 =
-    parsed.p2 === 0 ? data[currentPosition + 2] : currentPosition + 2;
-  const pos3 =
-    parsed.p3 === 0 ? data[currentPosition + 3] : currentPosition + 3;
+  const { p1, p2, p3 } = parsed;
+  const pos1 = determineMemoryAddress(data, p1, cP, 1, cRB);
+  const pos2 = determineMemoryAddress(data, p2, cP, 2, cRB);
+  const pos3 = determineMemoryAddress(data, p3, cP, 3, cRB);
 
-  const num1 = data[pos1];
-  const num2 = data[pos2];
+  // we can read "memory" beyond the provided data, and their value corresponds to their index if its "new"
+  const num1 = data[pos1] || pos1 - data.length;
+  const num2 = data[pos2] || pos2 - data.length;
   const result = parsed.opCode === 1 ? num1 + num2 : num1 * num2;
 
   data[pos3] = result;
@@ -68,58 +96,63 @@ const opCodeOneTwo = (
 
 const opCodeThree = (
   data: number[],
-  currentPosition: number,
   input: number,
-  parsed: IParsedInstructions
+  parsed: IParsedInstructions,
+  cP: number, // current pointer position
+  cRB: number // currentRelativeBase
 ) => {
-  const position =
-    parsed.p1 === 0 ? data[currentPosition + 1] : currentPosition + 1;
+  const position = determineMemoryAddress(data, parsed.p1, cP, 1, cRB);
   data[position] = input;
 };
 
 const opCodeFour = (
   data: number[],
-  currentPosition: number,
-  parsed: IParsedInstructions
+  parsed: IParsedInstructions,
+  cP: number, // current pointer position
+  cRB: number // currentRelativeBase
 ): number => {
-  const position =
-    parsed.p1 === 0 ? data[currentPosition + 1] : currentPosition + 1;
+  const position = determineMemoryAddress(data, parsed.p1, cP, 1, cRB);
   return data[position];
 };
 
 const opCodeFiveSix = (
   data: number[],
-  currentPosition: number,
-  parsed: IParsedInstructions
+  parsed: IParsedInstructions,
+  cP: number, // current pointer position
+  cRB: number // currentRelativeBase
 ): number => {
-  const pos1 =
-    parsed.p1 === 0 ? data[currentPosition + 1] : currentPosition + 1;
-  const pos2 =
-    parsed.p2 === 0 ? data[currentPosition + 2] : currentPosition + 2;
+  const { p1, p2 } = parsed;
+  const pos1 = determineMemoryAddress(data, p1, cP, 1, cRB);
+  const pos2 = determineMemoryAddress(data, p2, cP, 2, cRB);
 
-  const num1 = data[pos1];
+  // we can read "memory" beyond the provided data, and their value corresponds to their index if its "new"
+  const num1 = data[pos1] || pos1 - data.length;
+  const num2 = data[pos2] || pos2 - data.length;
 
   if (parsed.opCode === 5) {
-    return num1 > 0 ? data[pos2] : currentPosition + 3;
+    return num1 > 0 ? num2 : cP + 3;
   } else {
-    return num1 === 0 ? data[pos2] : currentPosition + 3;
+    return num1 === 0 ? num2 : cP + 3;
   }
 };
 
 const opCodeSevenEight = (
   data: number[],
-  currentPosition: number,
-  parsed: IParsedInstructions
+  parsed: IParsedInstructions,
+  cP: number, // current pointer position
+  cRB: number // currentRelativeBase
 ) => {
-  const pos1 =
-    parsed.p1 === 0 ? data[currentPosition + 1] : currentPosition + 1;
-  const pos2 =
-    parsed.p2 === 0 ? data[currentPosition + 2] : currentPosition + 2;
-  const pos3 =
-    parsed.p3 === 0 ? data[currentPosition + 3] : currentPosition + 3;
+  const { p1, p2, p3 } = parsed;
+  const pos1 = determineMemoryAddress(data, p1, cP, 1, cRB);
+  const pos2 = determineMemoryAddress(data, p2, cP, 2, cRB);
+  const pos3 = determineMemoryAddress(data, p3, cP, 3, cRB);
 
-  const num1 = data[pos1];
-  const num2 = data[pos2];
+  // we can read "memory" beyond the provided data, and their value corresponds to their index if its "new"
+  const num1 = data[pos1] || pos1 - data.length;
+  const num2 = data[pos2] || pos2 - data.length;
+
+  console.log("num 1 -> ", num1);
+  console.log("num 2 -> ", num2);
 
   if (parsed.opCode === 7) {
     data[pos3] = num1 < num2 ? 1 : 0;
@@ -128,17 +161,24 @@ const opCodeSevenEight = (
   }
 };
 
-const intCodeProgram = (
+const opCodeNine = (
   data: number[],
-  inputOne: number,
-  inputTwo: number
-): number[] => {
+  parsed: IParsedInstructions,
+  cP: number, // current pointer position
+  cRB: number // currentRelativeBase
+): number => {
+  const pos1 = determineMemoryAddress(data, parsed.p1, cP, 1, cRB);
+  const num1 = data[pos1] || pos1 - data.length;
+  return cRB + num1;
+};
+
+const intCodeProgram = (data: number[], input: number): number[] => {
   let pointer = 0;
   let instruction = data[pointer];
   let parsed = parseInstruction(instruction);
-  let input = inputOne;
-  let inputOneRead = false;
+  let relativeBase = 0;
 
+  const originalDataLength = data.length;
   const allOutputs = [];
 
   while (isValid(parsed.opCode)) {
@@ -146,35 +186,35 @@ const intCodeProgram = (
       break;
     }
 
-    if (inputOneRead) {
-      input = inputTwo;
-    }
-
     switch (parsed.opCode) {
       case 3:
-        opCodeThree(data, pointer, input, parsed);
-        inputOneRead = true;
+        opCodeThree(data, input, parsed, pointer, relativeBase);
         pointer += 2;
         break;
       case 4:
-        const output = opCodeFour(data, pointer, parsed);
+        const output = opCodeFour(data, parsed, pointer, relativeBase);
         allOutputs.push(output);
         pointer += 2;
         break;
       case 5:
       case 6:
-        pointer = opCodeFiveSix(data, pointer, parsed);
+        pointer = opCodeFiveSix(data, parsed, pointer, relativeBase);
         break;
       case 7:
       case 8:
-        opCodeSevenEight(data, pointer, parsed);
+        opCodeSevenEight(data, parsed, pointer, relativeBase);
         pointer += 4;
         break;
+      case 9:
+        relativeBase = opCodeNine(data, parsed, pointer, relativeBase);
+        pointer += 2;
+        break;
       default:
-        opCodeOneTwo(data, pointer, parsed);
+        opCodeOneTwo(data, parsed, pointer, relativeBase);
         pointer += 4;
     }
 
+    populateEmptyMemory(data, originalDataLength);
     instruction = data[pointer];
     parsed = parseInstruction(instruction);
   }
@@ -185,3 +225,8 @@ const intCodeProgram = (
 fs.readFile("./data.txt", "utf-8", (err: Error, data: string) => {
   if (err) throw err;
 });
+
+console.log("start");
+const sample = [109, 1, 204, -1, 1001, 100, 1, 100, 1008, 100, 16, 101, 0, 99];
+const res = intCodeProgram(sample, 1);
+console.log("res -> ", res);
