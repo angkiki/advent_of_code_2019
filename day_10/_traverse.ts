@@ -7,54 +7,25 @@ interface IOffsetMemo {
   [key: string]: boolean;
 }
 
+// find greatest common divisor
+export const findGCD = (n1: number, n2: number): number => {
+  if (!n2) {
+    return n1;
+  }
+
+  return findGCD(n2, n1 % n2);
+};
+
 // this will be Colums and Rows relative to Origin
 const deriveOffset = (col: number, row: number): ICoordinates => {
   // check for 0s first
   if (col === 0) return { col: 0, row: row > 0 ? 1 : -1 };
   if (row === 0) return { col: col > 0 ? 1 : -1, row: 0 };
 
-  // col is +ve, row is -ve, indicating a top right movement
-  if (col > 0 && row < 0) {
-    // Math.abs the row just to find the smaller number as the LCM
-    if (col > Math.abs(row) && col % row === 0) {
-      return { row: -1, col: col / -row };
-    } else if (row % col === 0) {
-      return { row: row / col, col: 1 };
-    }
-  }
-
-  // col is -ve, row is -ve, indicating a top left movement
-  if (col < 0 && row < 0) {
-    // finding the smaller number as the LCM (means finding the "bigger" number)
-    if (col > row && row % col === 0) {
-      return { col: -1, row: -(row / col) };
-    } else if (col % row === 0) {
-      return { col: -(row / col), row: -1 };
-    }
-  }
-
-  // col is +ve, row is +ve, indicating a bottom right movement
-  if (col > 0 && row > 0) {
-    if (col > row && col % row === 0) {
-      return { col: col / row, row: 1 };
-    } else if (row % col === 0) {
-      return { col: 1, row: row / col };
-    }
-  }
-
-  // col is -ve, row is +ve, indicating a bottom left movement
-  if (col < 0 && row > 0) {
-    // Math.abs the row just to find the smaller number as the LCM
-    if (Math.abs(col) > row && col % row === 0) {
-      return { col: col / row, row: 1 };
-    } else if (row % col === 0) {
-      return { col: -1, row: row / -col };
-    }
-  }
-
+  const divisor = findGCD(Math.abs(col), Math.abs(row));
   return {
-    col: col,
-    row: row,
+    col: col / divisor,
+    row: row / divisor,
   };
 };
 
@@ -79,7 +50,7 @@ export const scanRow = (
     // skip origin
     if (i === col && row === currentRow) continue;
 
-    if (asteroidRow[i] === "#") {
+    if (asteroidRow[i] === '#') {
       // col is the "origin", so a negative number indicates
       // a col that is to the right
       const offsetCol = col - i;
