@@ -159,14 +159,16 @@ const opCodeNine = (
   return cRB + num1;
 };
 
-export const intCodeProgram = (data: number[], input: number): number[] => {
+export const intCodeProgram = (data: number[], initialInput: number): number[] => {
   let pointer = 0;
   let instruction = data[pointer];
   let parsed = parseInstruction(instruction);
   let relativeBase = 0;
+  let input = initialInput;
 
   const allOutputs = [];
 
+  // to handle variable input as it will change according to the ship's hull colour
   while (isValid(parsed.opCode)) {
     if (parsed.opCode === 99) {
       break;
@@ -181,6 +183,7 @@ export const intCodeProgram = (data: number[], input: number): number[] => {
         const output = opCodeFour(data, parsed, pointer, relativeBase);
         allOutputs.push(output);
         pointer += 2;
+        // to handle painting & robot movement here
         break;
       case 5:
       case 6:
