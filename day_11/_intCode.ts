@@ -1,3 +1,13 @@
+import {
+  ICoordinates,
+  paintPanel,
+  EDirection,
+  turnLeft,
+  turnRight,
+  traverseHull,
+  countVisitedPanels,
+} from './_hullPainting';
+
 enum EModes {
   POSITION = 0,
   IMMEDIATE = 1,
@@ -159,20 +169,26 @@ const opCodeNine = (
   return cRB + num1;
 };
 
-export const intCodeProgram = (data: number[], initialInput: number): number[] => {
+export const intCodeProgram = (data: number[]): number => {
   let pointer = 0;
   let instruction = data[pointer];
   let parsed = parseInstruction(instruction);
   let relativeBase = 0;
-  let input = initialInput;
 
-  const allOutputs = [];
+  // - - - - - - - - - - - - - - - - - -
+  // - - - - Init Hull  Map Data - - - -
+  const coords: ICoordinates = { col: 0, row: 0 };
+  const hullMap = [[{ color: 0, visited: false }]];
+  let dir: EDirection = EDirection.UP;
+  let inputIsPaintColour = true;
 
-  // to handle variable input as it will change according to the ship's hull colour
   while (isValid(parsed.opCode)) {
     if (parsed.opCode === 99) {
       break;
     }
+
+    const curr = hullMap[coords.row][coords.col];
+    const input = curr.color;
 
     switch (parsed.opCode) {
       case 3:
@@ -181,9 +197,16 @@ export const intCodeProgram = (data: number[], initialInput: number): number[] =
         break;
       case 4:
         const output = opCodeFour(data, parsed, pointer, relativeBase);
-        allOutputs.push(output);
         pointer += 2;
-        // to handle painting & robot movement here
+
+        if (inputIsPaintColour) {
+          paintPanel(hullMap, coords, output);
+          inputIsPaintColour = false;
+        } else {
+          dir = output === 0 ? turnLeft(dir) : turnRight(dir);
+          traverseHull(hullMap, dir, coords);
+          inputIsPaintColour = true;
+        }
         break;
       case 5:
       case 6:
@@ -207,5 +230,6 @@ export const intCodeProgram = (data: number[], initialInput: number): number[] =
     parsed = parseInstruction(instruction);
   }
 
-  return allOutputs;
+  console.log('hull map size -> ', hullMap.length, hullMap[0].length);
+  return countVisitedPanels(hullMap);
 };
