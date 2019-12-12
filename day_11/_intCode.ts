@@ -6,6 +6,7 @@ import {
   turnRight,
   traverseHull,
   countVisitedPanels,
+  printHull,
 } from './_hullPainting';
 
 enum EModes {
@@ -230,9 +231,12 @@ export const intCodeProgram = (data: number[], startingColour: number) => {
     parsed = parseInstruction(instruction);
   }
 
-  // - - - - - Part One - - - - -
   if (startingColour === 0) {
+    // - - - - - Part One - - - - -
     const partOneResult = countVisitedPanels(hullMap);
     console.log('total panels visited in part one -> ', partOneResult);
+  } else {
+    // - - - - - Part Two - - - - -
+    printHull(hullMap);
   }
 };

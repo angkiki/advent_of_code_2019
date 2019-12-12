@@ -137,3 +137,15 @@ export const turnRight = (currDir: EDirection): EDirection => {
       return EDirection.UP;
   }
 };
+
+export const printHull = (hullMap: IHullMap[][]) => {
+  hullMap.forEach((row: IHullMap[]) => {
+    let result = '';
+
+    row.forEach((hull: IHullMap) => {
+      hull.color === 0 ? (result += '_') : (result += '#');
+    });
+
+    console.log(result);
+  });
+};
