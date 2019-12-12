@@ -169,7 +169,7 @@ const opCodeNine = (
   return cRB + num1;
 };
 
-export const intCodeProgram = (data: number[], startingColour: number): number => {
+export const intCodeProgram = (data: number[], startingColour: number) => {
   let pointer = 0;
   let instruction = data[pointer];
   let parsed = parseInstruction(instruction);
@@ -230,6 +230,9 @@ export const intCodeProgram = (data: number[], startingColour: number): number =
     parsed = parseInstruction(instruction);
   }
 
-  console.log('hull map size -> ', hullMap.length, hullMap[0].length);
-  return countVisitedPanels(hullMap);
+  // - - - - - Part One - - - - -
+  if (startingColour === 0) {
+    const partOneResult = countVisitedPanels(hullMap);
+    console.log('total panels visited in part one -> ', partOneResult);
+  }
 };
