@@ -169,7 +169,7 @@ const opCodeNine = (
   return cRB + num1;
 };
 
-export const intCodeProgram = (data: number[]): number => {
+export const intCodeProgram = (data: number[], startingColour: number): number => {
   let pointer = 0;
   let instruction = data[pointer];
   let parsed = parseInstruction(instruction);
@@ -178,7 +178,7 @@ export const intCodeProgram = (data: number[]): number => {
   // - - - - - - - - - - - - - - - - - -
   // - - - - Init Hull  Map Data - - - -
   const coords: ICoordinates = { col: 0, row: 0 };
-  const hullMap = [[{ color: 0, visited: false }]];
+  const hullMap = [[{ color: startingColour, visited: false }]];
   let dir: EDirection = EDirection.UP;
   let inputIsPaintColour = true;
 
