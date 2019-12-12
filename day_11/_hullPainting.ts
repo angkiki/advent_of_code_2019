@@ -41,10 +41,11 @@ const appendCol = (hullMap: IHullMap[][]) => hullMap.forEach(r => r.push({ color
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const traverseUp = (hullMap: IHullMap[][], coords: ICoordinates) => {
   const { row } = coords;
-  if (!hullMap[row - 1]) prependRow(hullMap);
-
-  // account for offset in row
-  coords.row += 1;
+  if (!hullMap[row - 1]) {
+    prependRow(hullMap);
+    // account for offset in row
+    coords.row += 1;
+  }
 };
 
 const traverseDown = (hullMap: IHullMap[][], coords: ICoordinates) => {
@@ -54,10 +55,11 @@ const traverseDown = (hullMap: IHullMap[][], coords: ICoordinates) => {
 
 const traverseLeft = (hullMap: IHullMap[][], coords: ICoordinates) => {
   const { row, col } = coords;
-  if (!hullMap[row][col - 1]) prependCol(hullMap);
-
-  // account for offset in col
-  coords.col += 1;
+  if (!hullMap[row][col - 1]) {
+    prependCol(hullMap);
+    // account for offset in col
+    coords.col += 1;
+  }
 };
 
 const traverseRight = (hullMap: IHullMap[][], coords: ICoordinates) => {
