@@ -1,3 +1,5 @@
+import { GameBoard, ICoords } from './_arcade';
+
 enum EModes {
   POSITION = 0,
   IMMEDIATE = 1,
@@ -159,11 +161,14 @@ const opCodeNine = (
   return cRB + num1;
 };
 
-export const intCodeProgram = (data: number[], input: number) => {
+export const intCodeProgram = (data: number[], input: number, gameBoard: GameBoard) => {
   let pointer = 0;
   let instruction = data[pointer];
   let parsed = parseInstruction(instruction);
   let relativeBase = 0;
+
+  // drawTileInstructions
+  let dti = [];
 
   while (isValid(parsed.opCode)) {
     if (parsed.opCode === 99) {
@@ -177,6 +182,15 @@ export const intCodeProgram = (data: number[], input: number) => {
         break;
       case 4:
         const output = opCodeFour(data, parsed, pointer, relativeBase);
+        dti.push(output);
+
+        if (dti.length === 3) {
+          const coords: ICoords = { fromLeft: dti[0], fromTop: dti[1] };
+          const tile = dti[2];
+          gameBoard.addTile(coords, tile);
+
+          dti = [];
+        }
         pointer += 2;
         break;
       case 5:
