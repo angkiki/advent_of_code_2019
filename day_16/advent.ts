@@ -5,7 +5,7 @@ fs.readFile('./data.txt', 'utf-8', (err: Error, data: string) => {
   if (err) throw err;
 
   const inputArray = data.split('').map(n => +n);
-  let currInputArray = inputArray;
+  let currInputArray = [...inputArray];
 
   console.log('computing part one ....');
   for (let i = 0; i < 100; i++) {
