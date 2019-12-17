@@ -83,3 +83,16 @@ export const efficientSignalOffset = (signal: number[]): number[] => {
 
   return cleanUpSignal(newSignal);
 };
+
+export const efficientSignalOffsetV2 = (signal: number[]): number[] => {
+  const newSignal = [];
+  let tally = 0;
+
+  for (let i = signal.length - 1; i >= 0; i--) {
+    const total = (tally + signal[i]) % 10;
+    tally += total;
+    newSignal.unshift(total);
+  }
+
+  return newSignal;
+};
