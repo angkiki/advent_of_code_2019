@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import { intCodeProgram } from './_intCode';
+import { RepairDroid } from './_repairDroid';
 
 export enum EBotDirection {
   NORTH = 1,
@@ -12,4 +13,6 @@ fs.readFile('./data.txt', 'utf-8', (err: Error, data: string) => {
   if (err) throw err;
 
   const dataArray = data.split(',').map(n => +n);
+  const repairDroid = new RepairDroid();
+  intCodeProgram(dataArray, repairDroid);
 });

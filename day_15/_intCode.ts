@@ -1,3 +1,5 @@
+import { EDir, RepairDroid } from './_repairDroid';
+
 enum EModes {
   POSITION = 0,
   IMMEDIATE = 1,
@@ -159,11 +161,13 @@ const opCodeNine = (
   return cRB + num1;
 };
 
-export const intCodeProgram = (data: number[], input: number) => {
+export const intCodeProgram = (data: number[], droid: RepairDroid) => {
   let pointer = 0;
   let instruction = data[pointer];
   let parsed = parseInstruction(instruction);
   let relativeBase = 0;
+
+  let input = EDir.UP;
 
   while (isValid(parsed.opCode)) {
     if (parsed.opCode === 99) {
@@ -177,6 +181,10 @@ export const intCodeProgram = (data: number[], input: number) => {
         break;
       case 4:
         const output = opCodeFour(data, parsed, pointer, relativeBase);
+        // handle movement here
+        // if output === 2, "end" is found
+        // output is 1 -> move in that direction
+        // output is 0 -> its a wall
         pointer += 2;
         break;
       case 5:
