@@ -15,7 +15,8 @@ export const phaseOffset = (offset: number, frequencyLength: number): number[] =
     pointer = pointerAddition(pointer);
   }
 
-  return result.slice(0, frequencyLength + 1);
+  result.shift();
+  return result.slice(0, frequencyLength);
 };
 
 const applyPhase = (signal: number[], phase: number[]): number => {
@@ -43,9 +44,43 @@ export const signalOffset = (signal: number[]): number[] => {
 
   for (let i = 0; i < signal.length; i++) {
     const phaseOffsetResult = phaseOffset(i, signal.length);
-    phaseOffsetResult.shift();
 
     const evaluatedSignal = applyPhase(signal, phaseOffsetResult);
+    newSignal.push(evaluatedSignal);
+  }
+
+  return cleanUpSignal(newSignal);
+};
+
+const applyEfficientPhase = (signal: number[], offset: number): number => {
+  let i = offset;
+  let j = offset;
+  let total = 0;
+  let positivePhase = true;
+
+  while (i < signal.length) {
+    while (j >= 0 && i < signal.length) {
+      positivePhase ? (total += signal[i]) : (total -= signal[i]);
+      i += 1;
+      j -= 1;
+    }
+
+    i += offset + 1;
+    j = offset;
+    positivePhase = !positivePhase;
+  }
+
+  return total;
+};
+
+const n = [1, 2, 3, 4, 5, 6, 7, 8];
+applyEfficientPhase(n, 1);
+
+export const efficientSignalOffset = (signal: number[]): number[] => {
+  const newSignal = [];
+
+  for (let i = 0; i < signal.length; i++) {
+    const evaluatedSignal = applyEfficientPhase(signal, i);
     newSignal.push(evaluatedSignal);
   }
 
