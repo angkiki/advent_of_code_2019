@@ -23,21 +23,21 @@ export class Grid {
   }
 
   moveUp = () => {
-    const { col, row } = this.currCoords;
+    const { row } = this.currCoords;
     if (!this.grid[row - 1]) {
       this.prependRow();
     }
 
-    this.currCoords = { col, row: row - 1 };
+    this.currCoords.row -= 1;
   };
 
   moveDown = () => {
-    const { col, row } = this.currCoords;
+    const { row } = this.currCoords;
     if (!this.grid[row + 1]) {
       this.appendRow();
     }
 
-    this.currCoords = { col, row: row + 1 };
+    this.currCoords.row += 1;
   };
 
   moveLeft = () => {
@@ -46,7 +46,7 @@ export class Grid {
       this.prependCol();
     }
 
-    this.currCoords = { col: col - 1, row };
+    this.currCoords.col -= 1;
   };
 
   moveRight = () => {
@@ -55,7 +55,7 @@ export class Grid {
       this.appendCol();
     }
 
-    this.currCoords = { col: col + 1, row };
+    this.currCoords.col += 1;
   };
 
   private makeNewCell = (): ICell => ({

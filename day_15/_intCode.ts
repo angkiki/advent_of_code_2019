@@ -184,7 +184,7 @@ export const intCodeProgram = (data: number[], droid: RepairDroid) => {
         // handle movement here
         // if output === 2, "end" is found
         // output is 1 -> move in that direction
-        // output is 0 -> its a wall
+        // output is 0 -> its a wall, change the current input
         pointer += 2;
         break;
       case 5:
