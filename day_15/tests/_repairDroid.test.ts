@@ -50,5 +50,74 @@ describe('RepairDroid', () => {
 
     const nextBestDir = droid.findNextBestInput();
     expect(nextBestDir).toEqual(EDir.RIGHT);
+
+    droid.move(EDir.RIGHT);
+    droid.markCurrentAsWall();
+    const nextBestDir2 = droid.findNextBestInput();
+    expect(droid.pathTraversed.length).toEqual(0);
+    expect(nextBestDir2).toEqual(EDir.DOWN);
+  });
+
+  it('handles appending rows & cols correctly', () => {
+    const droid = new RepairDroid();
+    droid.move(EDir.UP);
+    droid.markCurrentAsPath();
+    droid.move(EDir.RIGHT);
+    droid.markCurrentAsPath();
+
+    const e = [
+      [
+        { value: ERepairGrid.PATH, visited: true },
+        { value: ERepairGrid.PATH, visited: true },
+      ],
+      [
+        { value: ERepairGrid.PATH, visited: true },
+        { value: null, visited: false },
+      ],
+    ];
+    expect(droid.grid).toEqual(e);
+
+    droid.move(EDir.UP);
+    droid.markCurrentAsPath();
+
+    const e1 = [
+      [
+        { value: null, visited: false },
+        { value: ERepairGrid.PATH, visited: true },
+        // { value: null, visited: false },
+      ],
+      [
+        { value: ERepairGrid.PATH, visited: true },
+        { value: ERepairGrid.PATH, visited: true },
+        // { value: null, visited: false },
+      ],
+      [
+        { value: ERepairGrid.PATH, visited: true },
+        { value: null, visited: false },
+        // { value: null, visited: false },
+      ],
+    ];
+    expect(droid.grid).toEqual(e1);
+
+    droid.move(EDir.RIGHT);
+    droid.markCurrentAsPath();
+    const e2 = [
+      [
+        { value: null, visited: false },
+        { value: ERepairGrid.PATH, visited: true },
+        { value: ERepairGrid.PATH, visited: true },
+      ],
+      [
+        { value: ERepairGrid.PATH, visited: true },
+        { value: ERepairGrid.PATH, visited: true },
+        { value: null, visited: false },
+      ],
+      [
+        { value: ERepairGrid.PATH, visited: true },
+        { value: null, visited: false },
+        { value: null, visited: false },
+      ],
+    ];
+    expect(droid.grid).toEqual(e2);
   });
 });

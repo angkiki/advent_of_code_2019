@@ -63,10 +63,12 @@ export class Grid {
     value: null,
   });
 
-  private makeNewRow = (): null[] => {
+  private makeNewRow = (): ICell[] => {
     const rowLen = this.grid[0].length;
     const newCell = this.makeNewCell();
-    const newRow = Array(rowLen).fill({ ...newCell });
+    const newRow = Array(rowLen)
+      .fill(null)
+      .map(_ => ({ ...newCell }));
     return newRow;
   };
 
@@ -83,14 +85,14 @@ export class Grid {
 
   private prependCol = () => {
     this.grid.forEach(row => {
-      row.unshift(this.makeNewCell());
+      row.unshift({ ...this.makeNewCell() });
     });
     this.currCoords.col += 1;
   };
 
   private appendCol = () => {
     this.grid.forEach(row => {
-      row.push(this.makeNewCell());
+      row.push({ ...this.makeNewCell() });
     });
   };
 }

@@ -101,8 +101,7 @@ export class RepairDroid extends Grid {
   };
 
   private revertMove = () => {
-    const lastMove = this.pathTraversed.pop();
-    const inverseDir = this.getInversedDir(lastMove);
+    const inverseDir = this.getInversedDir(this.lastTraversed());
     this.move(inverseDir);
   };
 }
