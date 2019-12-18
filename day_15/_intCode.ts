@@ -181,10 +181,16 @@ export const intCodeProgram = (data: number[], droid: RepairDroid) => {
         break;
       case 4:
         const output = opCodeFour(data, parsed, pointer, relativeBase);
-        // handle movement here
-        // if output === 2, "end" is found
-        // output is 1 -> move in that direction
-        // output is 0 -> its a wall, change the current input
+        droid.move(input);
+        if (output === 0) {
+          droid.markCurrentAsWall();
+        } else if (output === 2) {
+          droid.markCurentAsEnd();
+        } else {
+          droid.markCurrentAsPath();
+        }
+
+        input = droid.findNextBestInput();
         pointer += 2;
         break;
       case 5:
@@ -204,6 +210,13 @@ export const intCodeProgram = (data: number[], droid: RepairDroid) => {
         opCodeOneTwo(data, parsed, pointer, relativeBase);
         pointer += 4;
     }
+
+    // commenting this out so that the droid continues exploring the whole area
+    // uncomment this to find the shortest path to the oxygen spot
+    // const { col, row } = droid.currCoords;
+    // if (droid.grid[row][col].value === ERepairGrid.END) {
+    //   break;
+    // }
 
     instruction = data[pointer];
     parsed = parseInstruction(instruction);
