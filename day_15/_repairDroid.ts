@@ -40,6 +40,11 @@ export class RepairDroid extends Grid {
     this.markCurrentAsVisited();
   };
 
+  markCurrentAsPath = () => {
+    const { col, row } = this.currCoords;
+    this.grid[row][col].value = ERepairGrid.PATH;
+  };
+
   markCurrentAsWall = () => {
     const { col, row } = this.currCoords;
     this.grid[row][col].value = ERepairGrid.WALL;
