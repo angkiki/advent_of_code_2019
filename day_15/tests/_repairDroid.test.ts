@@ -37,4 +37,18 @@ describe('RepairDroid', () => {
     ];
     expect(droid.grid).toEqual(e4);
   });
+
+  it('handles push & popping of previously traversed paths correctly', () => {
+    const droid = new RepairDroid();
+
+    droid.move(EDir.UP);
+    expect(droid.pathTraversed.length).toEqual(1);
+
+    droid.markCurrentAsPath();
+    droid.move(EDir.DOWN);
+    expect(droid.pathTraversed.length).toEqual(0);
+
+    const nextBestDir = droid.findNextBestInput();
+    expect(nextBestDir).toEqual(EDir.RIGHT);
+  });
 });
