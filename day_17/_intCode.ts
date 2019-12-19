@@ -1,3 +1,5 @@
+import { Scaffold } from './_scaffold';
+
 enum EModes {
   POSITION = 0,
   IMMEDIATE = 1,
@@ -165,6 +167,8 @@ export const intCodeProgram = (data: number[], input: number) => {
   let parsed = parseInstruction(instruction);
   let relativeBase = 0;
 
+  const sf = new Scaffold();
+
   while (isValid(parsed.opCode)) {
     if (parsed.opCode === 99) {
       break;
@@ -177,6 +181,15 @@ export const intCodeProgram = (data: number[], input: number) => {
         break;
       case 4:
         const output = opCodeFour(data, parsed, pointer, relativeBase);
+        if (output === 10) {
+          sf.down();
+        } else if (output === 35) {
+          sf.chart('#');
+        } else if (output === 46) {
+          if (sf.row === 0) {
+            sf.chart('.');
+          }
+        }
         pointer += 2;
         break;
       case 5:
@@ -200,4 +213,12 @@ export const intCodeProgram = (data: number[], input: number) => {
     instruction = data[pointer];
     parsed = parseInstruction(instruction);
   }
+
+  sf.map.forEach(r => {
+    let res = '';
+    r.forEach(c => {
+      res += c;
+    });
+    console.log(res);
+  });
 };
