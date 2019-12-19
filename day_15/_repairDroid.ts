@@ -13,6 +13,10 @@ export enum EDir {
   RIGHT = 4,
 }
 
+export interface IMemo {
+  [key: string]: boolean;
+}
+
 export class RepairDroid extends Grid {
   pathTraversed: EDir[];
   endCoords: ICoords;
@@ -92,6 +96,45 @@ export class RepairDroid extends Grid {
       });
       console.log(result);
     });
+  };
+
+  computeOxygenSpread = (): number => {
+    const memo: IMemo = {};
+    // - 1 for discounting the starting grid
+    return this.oxygenTraversal(this.endCoords, memo) - 1;
+  };
+
+  private oxygenTraversal = (cc: ICoords, memo: IMemo): number => {
+    if (!this.cellIsValid(cc, memo)) {
+      return 0;
+    }
+
+    const { row, col } = cc;
+    const key = this.constructMemoKey(cc);
+    memo[key] = true;
+    const longest = Math.max(
+      this.oxygenTraversal({ row: row + 1, col }, memo),
+      this.oxygenTraversal({ row: row - 1, col }, memo),
+      this.oxygenTraversal({ row, col: col + 1 }, memo),
+      this.oxygenTraversal({ row, col: col - 1 }, memo)
+    );
+    return 1 + longest;
+  };
+
+  private cellIsValid = (cc: ICoords, memo: IMemo): boolean => {
+    const { col, row } = cc;
+    const key = this.constructMemoKey(cc);
+    try {
+      const { value } = this.grid[row][col];
+      return value !== ERepairGrid.WALL && value !== null && !memo[key];
+    } catch (e) {
+      return false;
+    }
+  };
+
+  private constructMemoKey = (cc: ICoords): string => {
+    const { col, row } = cc;
+    return `${col}-${row}`;
   };
 
   private getInversedDir = (dir: EDir): EDir => {

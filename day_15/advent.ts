@@ -10,6 +10,9 @@ fs.readFile('./data.txt', 'utf-8', (err: Error, data: string) => {
 
   console.log('running int code & bot...');
   intCodeProgram(dataArray, repairDroid);
-  console.log('distance traversed: ', repairDroid.pathTraversed.length);
   repairDroid.printDroidGrid();
+
+  console.log('computing minutes for part 2....');
+  const minutesTaken = repairDroid.computeOxygenSpread();
+  console.log('minutes taken: ', minutesTaken);
 });
