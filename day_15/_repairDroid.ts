@@ -1,4 +1,4 @@
-import { Grid } from './_grid';
+import { Grid, ICoords } from './_grid';
 
 export enum ERepairGrid {
   PATH = 0,
@@ -15,10 +15,12 @@ export enum EDir {
 
 export class RepairDroid extends Grid {
   pathTraversed: EDir[];
+  endCoords: ICoords;
 
   constructor() {
     super(ERepairGrid.PATH);
     this.pathTraversed = [];
+    this.endCoords = { col: 0, row: 0 };
   }
 
   lastTraversed = () => this.pathTraversed[this.pathTraversed.length - 1];
@@ -56,6 +58,8 @@ export class RepairDroid extends Grid {
   markCurentAsEnd = () => {
     const { col, row } = this.currCoords;
     this.grid[row][col].value = ERepairGrid.END;
+    this.endCoords.row = row;
+    this.endCoords.col = col;
   };
 
   findNextBestInput = (): EDir => {
@@ -65,6 +69,29 @@ export class RepairDroid extends Grid {
     if (this.nextStepIsValid(EDir.LEFT)) return EDir.LEFT;
 
     return this.getInversedDir(this.lastTraversed());
+  };
+
+  printDroidGrid = () => {
+    this.grid.forEach((row, idx) => {
+      let result = '';
+      row.forEach((c, id) => {
+        const { row, col } = this.currCoords;
+        if (idx === row && id === col) {
+          result += '@';
+        } else {
+          if (c.value === ERepairGrid.WALL) {
+            result += '#';
+          } else if (c.value === ERepairGrid.PATH) {
+            result += '.';
+          } else if (c.value === ERepairGrid.END) {
+            result += '^';
+          } else {
+            result += '?';
+          }
+        }
+      });
+      console.log(result);
+    });
   };
 
   private getInversedDir = (dir: EDir): EDir => {

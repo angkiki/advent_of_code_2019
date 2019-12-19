@@ -3,7 +3,7 @@ interface ICell {
   value: number | null;
 }
 
-interface ICoords {
+export interface ICoords {
   col: number;
   row: number;
 }
