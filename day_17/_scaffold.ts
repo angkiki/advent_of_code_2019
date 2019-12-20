@@ -27,6 +27,14 @@ export class Scaffold {
     this.pointer = 0;
   };
 
+  printScaffold = () => {
+    this.map.forEach(r => {
+      let res = '';
+      r.forEach(c => (res += c));
+      console.log(res);
+    });
+  };
+
   private shiftPointer = () => {
     let newPointer = this.pointer + 1;
     if (this.row > 0 && newPointer > this.map[0].length - 1) {

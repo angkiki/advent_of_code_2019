@@ -161,13 +161,11 @@ const opCodeNine = (
   return cRB + num1;
 };
 
-export const intCodeProgram = (data: number[], input: number) => {
+export const intCodeProgram = (data: number[], input: number, sf: Scaffold) => {
   let pointer = 0;
   let instruction = data[pointer];
   let parsed = parseInstruction(instruction);
   let relativeBase = 0;
-
-  const sf = new Scaffold();
 
   while (isValid(parsed.opCode)) {
     if (parsed.opCode === 99) {
@@ -183,13 +181,22 @@ export const intCodeProgram = (data: number[], input: number) => {
         const output = opCodeFour(data, parsed, pointer, relativeBase);
         if (output === 10) {
           sf.down();
-        } else if (output === 35) {
-          sf.chart('#');
-        } else if (output === 46) {
-          if (sf.row === 0) {
-            sf.chart('.');
-          }
+        } else {
+          const c = String.fromCharCode(output);
+          sf.chart(c);
         }
+
+        // if (output === 10) {
+        //   sf.down();
+        // } else if (output === 35) {
+        //   sf.chart('#');
+        // } else if (output === 46) {
+        //   if (sf.row === 0) {
+        //     sf.chart('.');
+        //   }
+        // } else {
+        //   console.log('output is none of the above! -> ', output);
+        // }
         pointer += 2;
         break;
       case 5:
@@ -213,12 +220,4 @@ export const intCodeProgram = (data: number[], input: number) => {
     instruction = data[pointer];
     parsed = parseInstruction(instruction);
   }
-
-  sf.map.forEach(r => {
-    let res = '';
-    r.forEach(c => {
-      res += c;
-    });
-    console.log(res);
-  });
 };
