@@ -3,6 +3,9 @@ export class Scaffold {
   row: number;
   pointer: number;
 
+  readonly VALID_CHARS = ['#', '^', '<', '>', 'v'];
+  readonly INTERSECTION = 'X';
+
   constructor() {
     this.map = [[]];
     this.row = 0;
@@ -33,6 +36,44 @@ export class Scaffold {
       r.forEach(c => (res += c));
       console.log(res);
     });
+  };
+
+  markIntersections = () => {
+    for (let row = 0; row < this.map.length; row++) {
+      for (let col = 0; col < this.map[row].length; col++) {
+        if (this.isIntersection(col, row)) {
+          this.map[row][col] = this.INTERSECTION;
+        }
+      }
+    }
+  };
+
+  computeIntersections = (): number => {
+    let total = 0;
+
+    for (let row = 0; row < this.map.length; row++) {
+      for (let col = 0; col < this.map[row].length; col++) {
+        if (this.map[row][col] === this.INTERSECTION) {
+          total += row * col;
+        }
+      }
+    }
+
+    return total;
+  };
+
+  private isIntersection = (col: number, row: number): boolean => {
+    try {
+      const v = this.VALID_CHARS;
+      const up = this.map[row - 1][col];
+      const d = this.map[row + 1][col];
+      const l = this.map[row][col - 1];
+      const r = this.map[row][col + 1];
+
+      return v.includes(up) && v.includes(d) && v.includes(l) && v.includes(r);
+    } catch (e) {
+      return false;
+    }
   };
 
   private shiftPointer = () => {

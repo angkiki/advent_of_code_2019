@@ -7,6 +7,14 @@ fs.readFile('./data.txt', 'utf-8', (err: Error, data: string) => {
 
   const dataArray = data.split(',').map(n => +n);
   const sf = new Scaffold();
+
   intCodeProgram(dataArray, 0, sf);
   sf.printScaffold();
+
+  console.log('');
+  sf.markIntersections();
+  sf.printScaffold();
+
+  const intersectionsTotal = sf.computeIntersections();
+  console.log('total intersections: ', intersectionsTotal);
 });
