@@ -159,24 +159,29 @@ const opCodeNine = (
   return cRB + num1;
 };
 
-export const intCodeProgram = (data: number[], input: number) => {
+export const intCodeProgram = (data: number[], x: number, y: number): number[] => {
   let pointer = 0;
   let instruction = data[pointer];
   let parsed = parseInstruction(instruction);
   let relativeBase = 0;
+  const allOutputs = [];
 
+  let xRead = false;
   while (isValid(parsed.opCode)) {
     if (parsed.opCode === 99) {
       break;
     }
+    const input = xRead ? y : x;
 
     switch (parsed.opCode) {
       case 3:
         opCodeThree(data, input, parsed, pointer, relativeBase);
+        xRead = true;
         pointer += 2;
         break;
       case 4:
         const output = opCodeFour(data, parsed, pointer, relativeBase);
+        allOutputs.push(output);
         pointer += 2;
         break;
       case 5:
@@ -200,4 +205,6 @@ export const intCodeProgram = (data: number[], input: number) => {
     instruction = data[pointer];
     parsed = parseInstruction(instruction);
   }
+
+  return allOutputs;
 };
